@@ -5,9 +5,10 @@ type TopBarProps = {
   currentPage: "library" | "reader" | "chat" | "settings";
   bookId?: string; // For reader and chat pages
   children?: ReactNode;
+  onToggleHighlightsPanel?: () => void; // New prop
 };
 
-export function TopBar({ currentPage, bookId, children }: TopBarProps) {
+export function TopBar({ currentPage, bookId, children, onToggleHighlightsPanel }: TopBarProps) {
   const isLibraryPage = currentPage === "library";
 
   return (
@@ -85,6 +86,19 @@ export function TopBar({ currentPage, bookId, children }: TopBarProps) {
           )}
 
           {/* Children elements (for additional buttons/controls) */}
+          {/* Highlights Panel Toggle Button - Placed before other children like TOC button */}
+          {currentPage === "reader" && onToggleHighlightsPanel && (
+            <button
+              onClick={onToggleHighlightsPanel}
+              className="p-2 text-white hover:text-blue-100 transition-colors" // Added padding for easier clicking
+              aria-label="Toggle highlights panel"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v1h2a1 1 0 011 1v3a1 1 0 01-1 1h-2v1a2 2 0 01-2 2H7a2 2 0 01-2-2v-1H3a1 1 0 01-1-1V6a1 1 0 011-1h2V5zM14 11h6M14 15h4" />
+              </svg>
+            </button>
+          )}
+          
           {children}
 
           {/* Settings gear icon - only shown on library page */}
