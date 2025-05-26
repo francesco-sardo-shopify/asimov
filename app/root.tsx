@@ -12,9 +12,7 @@ import "./app.css";
 
 export const links: Route.LinksFunction = () => {
   // Get the base URL from Vite
-  const basePath = import.meta.env.BASE_URL.endsWith('/') 
-    ? import.meta.env.BASE_URL.slice(0, -1) 
-    : import.meta.env.BASE_URL;
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
   
   return [
     { rel: "icon", href: `${basePath}/favicon.ico` },

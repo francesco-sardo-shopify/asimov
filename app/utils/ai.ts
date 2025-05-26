@@ -32,7 +32,7 @@ export async function generateChatTitle(
       messages: [
         {
           role: "system",
-          content: "Your task is to generate a very short, concise title (maximum 6 words) that summarizes the main topic of this conversation. Focus on the key subject matter only. Do now use markdown, only plain text."
+          content: "Your task is to generate a very short, concise title (maximum 6 words) that summarizes the main topic of this conversation. Focus on the key subject matter only. Do not use markdown, only plain text."
         },
         ...relevantMessages.map(msg => ({
           role: msg.role,

@@ -114,32 +114,35 @@ export default function BookViewer({ loaderData }: Route.ComponentProps) {
       }
 
       // Load table of contents properly
-      try {
-        // First try to load the TOC from the EPUB's NCX
-        const ncxToc = await bookRef.current.loaded.navigation;
-        if (ncxToc && ncxToc.toc && ncxToc.toc.length > 0) {
-          setToc(ncxToc.toc);
-        } else {
-          // Fallback to using spine items if NCX TOC is empty
+      const loadToc = async () => {
+        try {
+          const ncxToc = await bookRef.current.loaded.navigation;
+          if (ncxToc && ncxToc.toc && ncxToc.toc.length > 0) {
+            setToc(ncxToc.toc);
+          } else {
+            generateFallbackToc();
+          }
+        } catch (error) {
+          console.error("Error loading table of contents:", error);
+          generateFallbackToc();
+        }
+      };
+
+      const generateFallbackToc = () => {
+        if (bookRef.current && bookRef.current.spine && bookRef.current.spine.items) {
           const spineItems = bookRef.current.spine.items;
           const fallbackToc = spineItems.map((item: any, index: number) => ({
             href: item.href,
-            label: `Section ${index + 1}`,
-            id: `spine-${index}`
+            label: item.idref || `Section ${index + 1}`, // Use idref for label if available
+            id: item.idref || `spine-${index}`
           }));
           setToc(fallbackToc);
+        } else {
+          setToc([]); // Set empty TOC if spine is not available
         }
-      } catch (error) {
-        console.error("Error loading table of contents:", error);
-        // Create a fallback TOC from spine
-        const spineItems = bookRef.current.spine.items;
-        const fallbackToc = spineItems.map((item: any, index: number) => ({
-          href: item.href,
-          label: `Section ${index + 1}`,
-          id: `spine-${index}`
-        }));
-        setToc(fallbackToc);
-      }
+      };
+
+      loadToc();
     };
 
     startReading();
@@ -173,15 +176,6 @@ export default function BookViewer({ loaderData }: Route.ComponentProps) {
       }
     };
   }, [arrayBuffer, book]);
-
-  // Add a separate effect to ensure keyboard navigation is always available
-  useEffect(() => {
-    document.addEventListener("keyup", handleKeyUp, true);
-    
-    return () => {
-      document.removeEventListener("keyup", handleKeyUp, true);
-    };
-  }, []);
 
   const handleNavigation = (direction: 'prev' | 'next') => {
     if (!renditionRef.current) {

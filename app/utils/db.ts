@@ -105,17 +105,8 @@ export async function addBook(book: Book): Promise<string> {
 // Get all books from the database, sorted by updatedAt (most recent first)
 export async function getAllBooks(): Promise<Book[]> {
   const db = await initDB();
-  const index = db.transaction('books').objectStore('books').index('by-updated-at');
-  
-  const books: Book[] = [];
-  let cursor = await index.openCursor(null, 'prev');
-  
-  while (cursor) {
-    books.push(cursor.value);
-    cursor = await cursor.continue();
-  }
-  
-  return books;
+  const books = await db.getAllFromIndex('books', 'by-updated-at');
+  return books.reverse(); // Reverse to get most recent first
 }
 
 // Get a single book by ID
@@ -182,18 +173,9 @@ export async function deleteChat(id: string): Promise<void> {
 
 export async function getChatsByBookId(bookId: string): Promise<Chat[]> {
   const db = await initDB();
-  const index = db.transaction('chats').objectStore('chats').index('by-book-id');
-  
-  const chats: Chat[] = [];
-  let cursor = await index.openCursor(bookId);
-  
-  while (cursor) {
-    chats.push(cursor.value);
-    cursor = await cursor.continue();
-  }
-  
+  const allChats = await db.getAllFromIndex('chats', 'by-book-id', bookId);
   // Sort by updated date (most recent first)
-  return chats.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+  return allChats.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 }
 
 export async function getLatestChatByBookId(bookId: string): Promise<Chat | undefined> {

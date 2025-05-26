@@ -1,13 +1,20 @@
 import type { Route } from "./+types/chats.$chatId";
 import { useRef, useEffect, useState } from "react";
-import { redirect, href, Link, Form } from "react-router";
-import { getBook, getSettings, getChat, updateChat } from "~/utils/db";
+import { redirect, href, Link, Form, useLoaderData } from "react-router";
+import { getBook, getSettings, getChat, updateChat, getChatsByBookId as fetchChatsByBookId } from "~/utils/db";
 import type { Chat, ChatMessage } from "~/utils/db";
 import { generateChatTitle } from "~/utils/ai";
 import * as EPUBJS from "epubjs";
 import { TopBar } from "~/components/TopBar";
 import OpenAI from "openai";
 import ReactMarkdown from "react-markdown";
+
+const SUGGESTED_INPUTS = [
+  "Summarize what I've read so far in the book",
+  "Tell me what happens in the rest of this chapter without major spoilers",
+  "Explain what's happening on this page in simple terms",
+  "Ask me a series of questions (one at a time) about the book so far to check my understanding",
+];
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -343,11 +350,11 @@ function ChatHistorySidebar({
   useEffect(() => {
     const loadChats = async () => {
       try {
-        const { getChatsByBookId } = await import("~/utils/db");
-        const bookChats = await getChatsByBookId(bookId);
+        const bookChats = await fetchChatsByBookId(bookId);
         setChats(bookChats);
       } catch (error) {
         console.error("Error loading chats:", error);
+        setChats([]);
       } finally {
         setLoading(false);
       }
@@ -429,10 +436,3 @@ function ChatHistorySidebar({
     </div>
   );
 }
-
-const SUGGESTED_INPUTS = [
-  "Summarize what I've read so far in the book",
-  "Tell me what happens in the rest of this chapter without major spoilers",
-  "Explain what's happening on this page in simple terms",
-  "Ask me a series of questions (one at a time) about the book so far to check my understanding",
-];
